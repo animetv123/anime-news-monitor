@@ -1,7 +1,10 @@
-name: KADOKAWA Monitor Test
+name: KADOKAWA Anime Monitor
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   monitor:
@@ -20,4 +23,18 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Run KADOKAWA monitor
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python kadokawa_monitor.py
+
+      - name: Save monitoring state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add kadokawa_seen.txt
+
+          git diff --cached --quiet || git commit -m "Update KADOKAWA news state"
+
+          git push
